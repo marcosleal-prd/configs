@@ -100,6 +100,12 @@ export DEV_PREFIX="marcosvinicius"
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
 
+# Auto init pyenv
+eval "$(pyenv init -)"
+
+# Poetry
+source "$HOME/.poetry/env"
+
 # If use nvm
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm

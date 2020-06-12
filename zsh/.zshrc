@@ -2,13 +2,12 @@
 # export PATH=$HOME/bin:/usr/local/bin:$PATH
 
 # Path to your oh-my-zsh installation.
-# export ZSH=FULL_PATH_OH_MY_ZSH
-export ZSH="$HOME/.oh-my-zsh"
+export ZSH="/Users/marcosvinicius/.oh-my-zsh"
 
 # Set name of the theme to load --- if set to "random", it will
 # load a random theme each time oh-my-zsh is loaded, in which case,
 # to know which specific one was loaded, run: echo $RANDOM_THEME
-# See https://github.com/robbyrussell/oh-my-zsh/wiki/Themes
+# See https://github.com/ohmyzsh/ohmyzsh/wiki/Themes
 ZSH_THEME="spaceship"
 
 # Set list of themes to pick from when loading at random
@@ -69,12 +68,11 @@ ZSH_THEME="spaceship"
 # Custom plugins may be added to ~/.oh-my-zsh/custom/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
-plugins=(git)
+plugins=(git poetry)
 
 source $ZSH/oh-my-zsh.sh
 
 # User configuration
-export DEV_PREFIX="marcosvinicius"
 
 # export MANPATH="/usr/local/man:$MANPATH"
 
@@ -100,27 +98,55 @@ export DEV_PREFIX="marcosvinicius"
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
 
-# Auto init pyenv
-eval "$(pyenv init -)"
+# Docker
+if [ /usr/local/bin/docker ]; then
+  # Docker Compose
+  alias dc='docker-compose'
+  alias dcb='docker-compose build'
+  alias dce='docker-compose exec'
+  alias dcps='docker-compose ps'
+  alias dcrs='docker-compose restart'
+  alias dcrm='docker-compose rm'
+  alias dcr='docker-compose run'
+  alias dcstop='docker-compose stop'
+  alias dcup='docker-compose up'
+  alias dcupd='docker-compose up -d'
+  alias dcdn='docker-compose down'
+  alias dcl='docker-compose logs'
+  alias dclf='docker-compose logs -f'
+  alias dcpull='docker-compose pull'
+  alias dcstart='docker-compose start'
+
+  # Docker Daemon
+  alias d="docker"
+  alias drmi="docker rmi -f $(docker images -a -q)"
+  alias drmv="docker volume rm $(docker volume ls -q)"
+  alias drmn="docker network rm $(docker network ls -q)"
+  alias drmc="docker container prune --force"
+  alias dlogin="docker login -u AWS -p $(aws ecr get-login-password) <AWS_ECR_URL>"
+fi
+
+# Pyenv
+if [ /usr/local/bin/pyenv ]; then
+  export PYENV_ROOT="$HOME/.pyenv"
+  export PATH="$PYENV_ROOT/bin:$PATH"
+
+  eval "$(pyenv init -)";
+fi
 
 # Poetry
-source "$HOME/.poetry/env"
+if [ "$HOME/.poetry/bin/poetry" ]; then
+  source "$HOME/.poetry/env";
+fi
 
-# If use nvm
-export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
-[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+# Kubernetes
+if [ /usr/local/bin/kubectl ]; then
+  source <(kubectl completion zsh);
 
-### Added by Zplugin's installer
-source "$HOME/.zplugin/bin/zplugin.zsh"
-autoload -Uz _zplugin
-(( ${+_comps} )) && _comps[zplugin]=_zplugin
-### End of Zplugin installer's chunk
+  alias k=kubectl
+fi
 
-zplugin light zdharma/fast-syntax-highlighting
-zplugin light zsh-users/zsh-autosuggestions
-zplugin light zsh-users/zsh-completions
-
+# Config Theme Spaceship
 SPACESHIP_PROMPT_ORDER=(
   user          # Username section
   dir           # Current directory section
@@ -139,12 +165,26 @@ SPACESHIP_PROMPT_ADD_NEWLINE=false
 SPACESHIP_CHAR_SYMBOL="❯"
 SPACESHIP_CHAR_SUFFIX=" "
 
-# tabtab source for serverless package
-# uninstall by removing these lines or running `tabtab uninstall serverless`
-[[ -f $HOME/.nvm/versions/node/v12.11.1/lib/node_modules/serverless/node_modules/tabtab/.completions/serverless.zsh ]] && . $HOME/.nvm/versions/node/v12.11.1/lib/node_modules/serverless/node_modules/tabtab/.completions/serverless.zsh
-# tabtab source for sls package
-# uninstall by removing these lines or running `tabtab uninstall sls`
-[[ -f $HOME/.nvm/versions/node/v12.11.1/lib/node_modules/serverless/node_modules/tabtab/.completions/sls.zsh ]] && . $HOME/.nvm/versions/node/v12.11.1/lib/node_modules/serverless/node_modules/tabtab/.completions/sls.zsh
-# tabtab source for slss package
-# uninstall by removing these lines or running `tabtab uninstall slss`
-[[ -f $HOME/.nvm/versions/node/v12.11.1/lib/node_modules/serverless/node_modules/tabtab/.completions/slss.zsh ]] && . $HOME/.nvm/versions/node/v12.11.1/lib/node_modules/serverless/node_modules/tabtab/.completions/slss.zsh
+# Plugins
+### Added by Zinit's installer
+if [[ ! -f $HOME/.zinit/bin/zinit.zsh ]]; then
+    print -P "%F{33}▓▒░ %F{220}Installing DHARMA Initiative Plugin Manager (zdharma/zinit)…%f"
+    command mkdir -p "$HOME/.zinit" && command chmod g-rwX "$HOME/.zinit"
+    command git clone https://github.com/zdharma/zinit "$HOME/.zinit/bin" && \
+        print -P "%F{33}▓▒░ %F{34}Installation successful.%f" || \
+        print -P "%F{160}▓▒░ The clone has failed.%f"
+fi
+
+source "$HOME/.zinit/bin/zinit.zsh"
+autoload -Uz _zinit
+(( ${+_comps} )) && _comps[zinit]=_zinit
+### End of Zinit installer's chunk
+
+zplugin light zdharma/fast-syntax-highlighting
+zplugin light zsh-users/zsh-autosuggestions
+zplugin light zsh-users/zsh-completions
+
+# Node NVM
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion

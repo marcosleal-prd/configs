@@ -146,6 +146,31 @@ if [ /usr/local/bin/kubectl ]; then
   alias k=kubectl
 fi
 
+# Kind K8S
+if [ /usr/local/bin/kind ]; then
+  update-local-secrets() {
+    echo "Updating local secrets...";
+    echo "Switching to context: kind-local...";
+    kubectl config use-context kind-local;
+
+    echo "Removing old secrets...";
+    kubectl delete secret ecr-secret -n development;
+    kubectl delete secret ecr-secret -n qa;
+    kubectl delete secret ecr-secret -n production;
+
+    echo "Retrieving docker credentials for ECR...";
+    DOCKER_USER=AWS;
+    DOCKER_EMAIL=<YOUR_EMAIL>;
+    DOCKER_SERVER=<AWS_ECR_URL>;
+    DOCKER_PASSWORD="$(aws ecr get-login-password)";
+
+    echo "Creating new secrets...";
+    kubectl -n development create secret docker-registry ecr-secret --docker-server=$DOCKER_SERVER --docker-username=$DOCKER_USER --docker-password=$DOCKER_PASSWORD --docker-email=$DOCKER_EMAIL;
+    kubectl -n qa create secret docker-registry ecr-secret --docker-server=$DOCKER_SERVER --docker-username=$DOCKER_USER --docker-password=$DOCKER_PASSWORD --docker-email=$DOCKER_EMAIL;
+    kubectl -n production create secret docker-registry ecr-secret --docker-server=$DOCKER_SERVER --docker-username=$DOCKER_USER --docker-password=$DOCKER_PASSWORD --docker-email=$DOCKER_EMAIL;
+  }
+fi
+
 # Config Theme Spaceship
 SPACESHIP_PROMPT_ORDER=(
   user          # Username section

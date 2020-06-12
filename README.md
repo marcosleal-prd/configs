@@ -36,4 +36,4 @@ All files and environments are configured with the Dracula theme, zsh is the exc
 
 ## Maintainers
 
-* [marcosv-lealferreira](https://github.com/marcosv-lealferreira)
+* [marcosleal-prd](https://github.com/marcosleal-prd/)

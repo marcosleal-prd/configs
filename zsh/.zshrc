@@ -2,7 +2,7 @@
 # export PATH=$HOME/bin:/usr/local/bin:$PATH
 
 # Path to your oh-my-zsh installation.
-export ZSH="/Users/marcosvinicius/.oh-my-zsh"
+export ZSH="/Users/[USERNAME]/.oh-my-zsh"
 
 # Set name of the theme to load --- if set to "random", it will
 # load a random theme each time oh-my-zsh is loaded, in which case,
@@ -57,7 +57,7 @@ ZSH_THEME="spaceship"
 # You can set one of the optional three formats:
 # "mm/dd/yyyy"|"dd.mm.yyyy"|"yyyy-mm-dd"
 # or set a custom format using the strftime function format specifications,
-# see 'man strftime' for details.
+# see "man strftime" for details.
 # HIST_STAMPS="mm/dd/yyyy"
 
 # Would you like to use another custom folder than $ZSH/custom?
@@ -81,9 +81,9 @@ source $ZSH/oh-my-zsh.sh
 
 # Preferred editor for local and remote sessions
 # if [[ -n $SSH_CONNECTION ]]; then
-#   export EDITOR='vim'
+#   export EDITOR="vim"
 # else
-#   export EDITOR='mvim'
+#   export EDITOR="mvim"
 # fi
 
 # Compilation flags
@@ -98,78 +98,80 @@ source $ZSH/oh-my-zsh.sh
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
 
-# Docker
-if [ /usr/local/bin/docker ]; then
-  # Docker Compose
-  alias dc='docker-compose'
-  alias dcb='docker-compose build'
-  alias dce='docker-compose exec'
-  alias dcps='docker-compose ps'
-  alias dcrs='docker-compose restart'
-  alias dcrm='docker-compose rm'
-  alias dcr='docker-compose run'
-  alias dcstop='docker-compose stop'
-  alias dcup='docker-compose up'
-  alias dcupd='docker-compose up -d'
-  alias dcdn='docker-compose down'
-  alias dcl='docker-compose logs'
-  alias dclf='docker-compose logs -f'
-  alias dcpull='docker-compose pull'
-  alias dcstart='docker-compose start'
+# AWS Envs
+export JSM_ECR="[JSM_ECR]";
+export JSM_EMAIL="[JSM_EMAIL]";
 
-  # Docker Daemon
-  alias d="docker"
-  alias drmi="docker rmi -f $(docker images -a -q)"
-  alias drmv="docker volume rm $(docker volume ls -q)"
-  alias drmn="docker network rm $(docker network ls -q)"
-  alias drmc="docker container prune --force"
-  alias dlogin="docker login -u AWS -p $(aws ecr get-login-password) <AWS_ECR_URL>"
-fi
+# Docker Compose
+alias dc="docker-compose";
+alias dcb="docker-compose build";
+alias dce="docker-compose exec";
+alias dcps="docker-compose ps";
+alias dcrs="docker-compose restart";
+alias dcrm="docker-compose rm";
+alias dcr="docker-compose run";
+alias dcstop="docker-compose stop";
+alias dcup="docker-compose up";
+alias dcupd="docker-compose up -d";
+alias dcdn="docker-compose down";
+alias dcl="docker-compose logs";
+alias dclf="docker-compose logs -f";
+alias dcpull="docker-compose pull";
+alias dcstart="docker-compose start";
+
+# Docker Daemon
+alias d="docker";
+alias drmi="docker rmi -f $(docker images -a -q)";
+alias drmv="docker volume rm $(docker volume ls -q)";
+alias drmn="docker network rm $(docker network ls -q)";
+alias drmc="docker container prune --force";
+alias dlogin="docker login -u AWS -p $(aws ecr get-login-password) $JSM_ECR";
 
 # Pyenv
-if [ /usr/local/bin/pyenv ]; then
-  export PYENV_ROOT="$HOME/.pyenv"
-  export PATH="$PYENV_ROOT/bin:$PATH"
+export PYENV_ROOT="$HOME/.pyenv";
+export PATH="$PYENV_ROOT/bin:$PATH";
 
-  eval "$(pyenv init -)";
-fi
+eval "$(pyenv init -)";
 
 # Poetry
-if [ "$HOME/.poetry/bin/poetry" ]; then
-  source "$HOME/.poetry/env";
-fi
+source "$HOME/.poetry/env";
 
 # Kubernetes
-if [ /usr/local/bin/kubectl ]; then
-  source <(kubectl completion zsh);
+export KUBECONFIG="$HOME/.kube/config";
+source <(kubectl completion zsh);
 
-  alias k=kubectl
-fi
+alias k=kubectl
+
+top-pod() {
+  kubectl -n $1 top pod $2 --containers;
+}
 
 # Kind K8S
-if [ /usr/local/bin/kind ]; then
-  update-local-secrets() {
-    echo "Updating local secrets...";
-    echo "Switching to context: kind-local...";
-    kubectl config use-context kind-local;
+update-local-secrets() {
+  echo "Updating local secrets...";
+  echo "Switching to context: kind-local...";
+  kubectl config use-context kind-local;
 
-    echo "Removing old secrets...";
-    kubectl delete secret ecr-secret -n development;
-    kubectl delete secret ecr-secret -n qa;
-    kubectl delete secret ecr-secret -n production;
+  echo "Removing old secrets...";
+  kubectl delete secret ecr-secret -n development;
+  kubectl delete secret ecr-secret -n qa;
+  kubectl delete secret ecr-secret -n production;
 
-    echo "Retrieving docker credentials for ECR...";
-    DOCKER_USER=AWS;
-    DOCKER_EMAIL=<YOUR_EMAIL>;
-    DOCKER_SERVER=<AWS_ECR_URL>;
-    DOCKER_PASSWORD="$(aws ecr get-login-password)";
+  echo "Retrieving docker credentials for ECR...";
+  DOCKER_USER=AWS;
+  DOCKER_EMAIL=$JSM_ECR;
+  DOCKER_SERVER=$JSM_EMAIL;
+  DOCKER_PASSWORD="$(aws ecr get-login-password)";
 
-    echo "Creating new secrets...";
-    kubectl -n development create secret docker-registry ecr-secret --docker-server=$DOCKER_SERVER --docker-username=$DOCKER_USER --docker-password=$DOCKER_PASSWORD --docker-email=$DOCKER_EMAIL;
-    kubectl -n qa create secret docker-registry ecr-secret --docker-server=$DOCKER_SERVER --docker-username=$DOCKER_USER --docker-password=$DOCKER_PASSWORD --docker-email=$DOCKER_EMAIL;
-    kubectl -n production create secret docker-registry ecr-secret --docker-server=$DOCKER_SERVER --docker-username=$DOCKER_USER --docker-password=$DOCKER_PASSWORD --docker-email=$DOCKER_EMAIL;
-  }
-fi
+  echo "Creating new secrets...";
+  kubectl -n development create secret docker-registry ecr-secret --docker-server=$DOCKER_SERVER --docker-username=$DOCKER_USER --docker-password=$DOCKER_PASSWORD --docker-email=$DOCKER_EMAIL;
+  kubectl -n qa create secret docker-registry ecr-secret --docker-server=$DOCKER_SERVER --docker-username=$DOCKER_USER --docker-password=$DOCKER_PASSWORD --docker-email=$DOCKER_EMAIL;
+  kubectl -n production create secret docker-registry ecr-secret --docker-server=$DOCKER_SERVER --docker-username=$DOCKER_USER --docker-password=$DOCKER_PASSWORD --docker-email=$DOCKER_EMAIL;
+}
+
+# PHP
+export PATH="/usr/local/opt/apr/bin:$PATH";
+export PATH="$HOME/.composer/vendor/bin:$PATH";
 
 # Config Theme Spaceship
 SPACESHIP_PROMPT_ORDER=(
@@ -191,7 +193,7 @@ SPACESHIP_CHAR_SYMBOL="❯"
 SPACESHIP_CHAR_SUFFIX=" "
 
 # Plugins
-### Added by Zinit's installer
+### Added by Zinit"s installer
 if [[ ! -f $HOME/.zinit/bin/zinit.zsh ]]; then
     print -P "%F{33}▓▒░ %F{220}Installing DHARMA Initiative Plugin Manager (zdharma/zinit)…%f"
     command mkdir -p "$HOME/.zinit" && command chmod g-rwX "$HOME/.zinit"
@@ -203,7 +205,7 @@ fi
 source "$HOME/.zinit/bin/zinit.zsh"
 autoload -Uz _zinit
 (( ${+_comps} )) && _comps[zinit]=_zinit
-### End of Zinit installer's chunk
+### End of Zinit installer"s chunk
 
 zplugin light zdharma/fast-syntax-highlighting
 zplugin light zsh-users/zsh-autosuggestions
